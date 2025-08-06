@@ -18,7 +18,6 @@ import { useConvexMutation } from "@/hooks/use-convex-query";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 
-
 const NewProjectModal = ({ isOpen, onClose }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [projectTitle, setProjectTitle] = useState("");
@@ -36,7 +35,7 @@ const NewProjectModal = ({ isOpen, onClose }) => {
   const currentProjectCount = projects?.length || 0;
   const canCreate = canCreateProject(currentProjectCount);
 
-  const handleCreateProject=()=> {}
+  const handleCreateProject = () => {};
 
   return (
     <>
@@ -71,9 +70,18 @@ const NewProjectModal = ({ isOpen, onClose }) => {
                 </AlertDescription>
               </Alert>
             )}
-
-            {/* Upload Area */}
           </div>
+
+          {/* Upload Area */}
+          <div {...getRootProps()}>
+            <input {...getInputProps()} />
+            {isDragActive ? (
+              <p>Drop the files here ...</p>
+            ) : (
+              <p>Drag 'n' drop some files here, or click to select files</p>
+            )}
+          </div>
+
           <DialogFooter className={"gap-3"}>
             <Button
               variant="ghost"
