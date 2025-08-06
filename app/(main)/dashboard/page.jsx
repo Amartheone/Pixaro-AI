@@ -6,6 +6,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Sparkles } from "lucide-react";
 import { BarLoader } from "react-spinners";
+import NewProjectModal from "./_components/new-project-modal";
 
 const Dashboard = () => {
   const [showNewProjectModal, setShowNewProjectModal] = useState(false);
@@ -65,8 +66,10 @@ const Dashboard = () => {
           </div>
         )}
 
-        <NewProjectModal isOpen={showNewProjectModal}
-        onClose={() => setShowNewProjectModal(false)} />
+        <NewProjectModal
+          isOpen={showNewProjectModal}
+          onClose={() => setShowNewProjectModal(false)}
+        />
       </div>
     </div>
   );
