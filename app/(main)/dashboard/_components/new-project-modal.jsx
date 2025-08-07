@@ -80,6 +80,10 @@ const NewProjectModal = ({ isOpen, onClose }) => {
     setIsUploading(true);
 
     try {
+      const formData = new FormData();
+      formData.append("file",selectedFile)
+      formData.append("fileName",selectedFile.name)
+
       
     } catch (error) {
       
