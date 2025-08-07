@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { Crown, Loader2 } from "lucide-react";
+import { Crown, ImageIcon, Loader2, Upload, X } from "lucide-react";
 import React from "react";
 import { usePlanAccess } from "@/hooks/use-plan-access";
 import { api } from "@/convex/_generated/api";
@@ -17,14 +17,23 @@ import { useConvexQuery } from "@/hooks/use-convex-query";
 import { useConvexMutation } from "@/hooks/use-convex-query";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
+import { useDropzone } from "react-dropzone";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 const NewProjectModal = ({ isOpen, onClose }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [projectTitle, setProjectTitle] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const handleClose = () => {
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    setProjectTitle("");
+    setIsUploading(false);
     onClose();
   };
 
@@ -35,7 +44,47 @@ const NewProjectModal = ({ isOpen, onClose }) => {
   const currentProjectCount = projects?.length || 0;
   const canCreate = canCreateProject(currentProjectCount);
 
-  const handleCreateProject = () => {};
+  const onDrop = (acceptedFiles) => {
+    const file = acceptedFiles[0];
+
+    if (file) {
+      setSelectedFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+
+      const nameWithoutExt = file.name.replace(/\.[^/.]+$/, "");
+      //These signs above were the way by which the jpg or any image files will be uploaded
+      setProjectTitle(nameWithoutExt || "Untitled Project");
+    }
+  };
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      "image/*": [".png", ".jpg", ".jpeg", ".webp", ".gif"],
+    },
+    maxFiles: 1,
+    maxSize: 20 * 1024 * 1024, // 20 MB limit
+  });
+
+  const handleCreateProject = async() => {
+    if(!canCreate){
+      setShowUpgradeModal(true);
+      return;
+    }
+
+    if(!selectedFile || !projectTitle.trim()) {
+      toast.error("Please select an image and enter a project title.");
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      
+    } catch (error) {
+      
+    }
+  };
 
   return (
     <>
@@ -70,15 +119,82 @@ const NewProjectModal = ({ isOpen, onClose }) => {
                 </AlertDescription>
               </Alert>
             )}
-          </div>
 
-          {/* Upload Area */}
-          <div {...getRootProps()}>
-            <input {...getInputProps()} />
-            {isDragActive ? (
-              <p>Drop the files here ...</p>
+            {/* Upload Area */}
+            {!selectedFile ? (
+              <div
+                {...getRootProps()}
+                className={`border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-all
+              ${
+                isDragActive
+                  ? "border-cyan-400 bg-cyan400/5"
+                  : "border-white/20 hover:border-white/40"
+              } ${!canCreate ? "opacity-50 pointer-events-none" : ""}`}
+              >
+                <input {...getInputProps()} />
+                <Upload className="h-12 w-12 text-white/50 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-white mb-2">
+                  {isDragActive ? "Drop the image here" : "Upload an Image"}
+                </h3>
+                <p className="text-white/70 mb-4">
+                  {canCreate
+                    ? "Drag and drop your image, or click to browse."
+                    : "Upgrade to Pixaro Pro to create more projects."}
+                </p>{" "}
+                <p className="text-sm text-white/50">
+                  Supports PNG,JPG, WEBP up to 20MB.
+                </p>
+              </div>
             ) : (
-              <p>Drag 'n' drop some files here, or click to select files</p>
+              <div className="space-y-6">
+                <div className="relative">
+                  <img
+                    src={previewUrl}
+                    alt="Preview"
+                    className="w-full h-64 object-cover rounded-xl border border-white/10"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      setSelectedFile(null);
+                      setPreviewUrl(null);
+                      setProjectTitle("");
+                    }}
+                    className="absolute top-2 bg-black/50 hover:bg-black/70 text-white"
+                  >
+                    <X className="h-5 w-5 text-white/70" />
+                  </Button>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="project-title" className="text-white">
+                    Project Title
+                  </Label>
+                  <Input
+                    id="project-title"
+                    type="text"
+                    value={projectTitle}
+                    onChange={(e) => setProjectTitle(e.target.value)}
+                    placeholder="Enter project name..."
+                    className="bg-slate-700 border-white/20 text-white placeholder-white/50 focus:border-cyan-400 focus:ring-cyan-400"
+                  />
+                </div>
+
+                <div className="bg-slate-700/50 rounded-lg p-4">
+                <div>
+                  <ImageIcon className="h-5 w-5 text-cyan-400" />
+                  <div>
+                    <p className="text-white font-medium">
+                      {selectedFile.name}
+                    </p>
+                    <p className="text-white/70 text-sm">
+                    {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                    </p>
+                  </div>
+                </div>
+                </div>
+              </div>
             )}
           </div>
 
