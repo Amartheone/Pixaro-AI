@@ -21,6 +21,8 @@ import { useDropzone } from "react-dropzone";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import UpgradeModal from "@/components/upgrade-modal";
 
 const NewProjectModal = ({ isOpen, onClose }) => {
   const [isUploading, setIsUploading] = useState(false);
@@ -28,6 +30,7 @@ const NewProjectModal = ({ isOpen, onClose }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const router = useRouter();
 
   const handleClose = () => {
     setSelectedFile(null);
@@ -66,13 +69,13 @@ const NewProjectModal = ({ isOpen, onClose }) => {
     maxSize: 20 * 1024 * 1024, // 20 MB limit
   });
 
-  const handleCreateProject = async() => {
-    if(!canCreate){
+  const handleCreateProject = async () => {
+    if (true) {
       setShowUpgradeModal(true);
       return;
     }
 
-    if(!selectedFile || !projectTitle.trim()) {
+    if (!selectedFile || !projectTitle.trim()) {
       toast.error("Please select an image and enter a project title.");
       return;
     }
@@ -81,24 +84,41 @@ const NewProjectModal = ({ isOpen, onClose }) => {
 
     try {
       const formData = new FormData();
-      formData.append("file",selectedFile)
-      formData.append("fileName",selectedFile.name)
+      formData.append("file", selectedFile);
+      formData.append("fileName", selectedFile.name);
 
-      const uploadResponse = await fetch("api/imagekit/upload",{
+      const uploadResponse = await fetch("/api/imagekit/upload", {
         method: "POST",
         body: formData,
-      })
+      });
+
       const uploadData = await uploadResponse.json();
-      
-      if(!uploadData.success){
-        throw new Error(uploadData.error || "Failed to upload image")
+
+      if (!uploadData.success) {
+        throw new Error(uploadData.error || "Failed to upload image");
       }
 
+      //create project in convex
       const projectId = await createProject({
-        title: projectTitle.trim()
-      })
+        title: projectTitle.trim(),
+        originalImageUrl: uploadData.url,
+        currentImageUrl: uploadData.url,
+        thumbnailUrl: uploadData.thumbnailUrl,
+        width: uploadData.width || 800,
+        height: uploadData.height || 600,
+        canvasState: null,
+      });
+
+      toast.success("Project created successfully!!");
+
+      router.push(`/editor/${projectId}`);
     } catch (error) {
-      
+      console.error("Error creating project:", error);
+      toast.error(
+        error.message || "Failed to create project. Please try again."
+      );
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -198,17 +218,17 @@ const NewProjectModal = ({ isOpen, onClose }) => {
                 </div>
 
                 <div className="bg-slate-700/50 rounded-lg p-4">
-                <div>
-                  <ImageIcon className="h-5 w-5 text-cyan-400" />
                   <div>
-                    <p className="text-white font-medium">
-                      {selectedFile.name}
-                    </p>
-                    <p className="text-white/70 text-sm">
-                    {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                    </p>
+                    <ImageIcon className="h-5 w-5 text-cyan-400" />
+                    <div>
+                      <p className="text-white font-medium">
+                        {selectedFile.name}
+                      </p>
+                      <p className="text-white/70 text-sm">
+                        {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                      </p>
+                    </div>
                   </div>
-                </div>
                 </div>
               </div>
             )}
@@ -241,6 +261,13 @@ const NewProjectModal = ({ isOpen, onClose }) => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <UpgradeModal isOpen={showUpgradeModal} 
+      onClose={()=>setShowUpgradeModal(false)}
+      restrictedTool = "projects"
+      reason="Free plan is limited to 3 projects. Upgrade to Pro for unlimited projects and access to all the AI editing tools."
+      />
+
     </>
   );
 };

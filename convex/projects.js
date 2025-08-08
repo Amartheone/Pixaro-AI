@@ -22,14 +22,14 @@ export const create = mutation({
         .withIndex("by_user", (q) => q.eq("userId", user._id))
         .collect();
 
-      if (projectCount.lenght >= 3) {
+      if (projectCount.length >= 3) {
         throw new Error(
           "Free plan limited to 3 projects. Upgrade to a paid plan to create more."
         );
       }
     }
 
-    await ctx.db.insert("projects", {
+    const projectId = await ctx.db.insert("projects", {
       title: args.title,
       userId: user._id,
       originalImageUrl: args.originalImageUrl,

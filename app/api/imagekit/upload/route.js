@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 
 const imagekit = new ImageKit({
   publicKey: process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY,
-  privatekey: process.env.IMAGEKIT_PRIVATE_KEY,
+  privateKey: process.env.IMAGEKIT_PRIVATE_KEY,
   urlEndpoint: process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT,
 });
 
@@ -42,39 +42,37 @@ export async function POST(request) {
       src: uploadResponse.url,
       transformation: [
         {
-            width: 400,
-            height: 300,
-            cropMode: "maintain_ar", //maintain aspect ratio
-            quality: 80,
+          width: 400,
+          height: 300,
+          cropMode: "maintain_ar", //maintain aspect ratio
+          quality: 80,
         },
       ],
     });
 
     return NextResponse.json({
-        success:true,
-        url: uploadResponse.url,
-        thumbnailUrl: thumbnailUrl,
-        fileId: uploadResponse.fileId,
-        width: uploadResponse.width,
-        height: uploadResponse.height,
-        size: uploadResponse.size,
-        name: uploadResponse.name,
+      success: true,
+      url: uploadResponse.url,
+      thumbnailUrl: thumbnailUrl,
+      fileId: uploadResponse.fileId,
+      width: uploadResponse.width,
+      height: uploadResponse.height,
+      size: uploadResponse.size,
+      name: uploadResponse.name,
     });
-
-
   } catch (error) {
     console.error("Imagekit upload error:", error);
     return NextResponse.json(
-        {
-            success: false,
-            error: "Failed to upload image",
-            details: error.message,
-        },
-        {status: 500} 
-        // These are part of HTTP status codes where:
-        // 2xx means success (like 200 OK)
-        // 4xx means client errors (like 400, 401)
-        // 5xx means server errors (like 500)
-    )    
+      {
+        success: false,
+        error: "Failed to upload image",
+        details: error.message,
+      },
+      { status: 500 }
+      // These are part of HTTP status codes where:
+      // 2xx means success (like 200 OK)
+      // 4xx means client errors (like 400, 401)
+      // 5xx means server errors (like 500)
+    );
   }
 }
