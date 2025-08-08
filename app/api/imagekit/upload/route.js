@@ -44,7 +44,7 @@ export async function POST(request) {
         {
             width: 400,
             height: 300,
-            cropMode: "maintain_ar",
+            cropMode: "maintain_ar", //maintain aspect ratio
             quality: 80,
         },
       ],

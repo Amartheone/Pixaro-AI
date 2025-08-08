@@ -84,7 +84,19 @@ const NewProjectModal = ({ isOpen, onClose }) => {
       formData.append("file",selectedFile)
       formData.append("fileName",selectedFile.name)
 
+      const uploadResponse = await fetch("api/imagekit/upload",{
+        method: "POST",
+        body: formData,
+      })
+      const uploadData = await uploadResponse.json();
       
+      if(!uploadData.success){
+        throw new Error(uploadData.error || "Failed to upload image")
+      }
+
+      const projectId = await createProject({
+        title: projectTitle.trim()
+      })
     } catch (error) {
       
     }
