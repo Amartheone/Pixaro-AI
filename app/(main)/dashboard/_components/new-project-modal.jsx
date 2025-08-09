@@ -138,7 +138,7 @@ const NewProjectModal = ({ isOpen, onClose }) => {
             )}
           </DialogHeader>
 
-          <div className="spce-y-6">
+          <div className="space-y-6">
             {isFree && currentProjectCount >= 2 && (
               <Alert className="bg-amber-500/10 border-amber-500/20">
                 <Crown className="h-5 w-5 text-amber-400" />
@@ -262,12 +262,12 @@ const NewProjectModal = ({ isOpen, onClose }) => {
         </DialogContent>
       </Dialog>
 
-      <UpgradeModal isOpen={showUpgradeModal} 
-      onClose={()=>setShowUpgradeModal(false)}
-      restrictedTool = "projects"
-      reason="Free plan is limited to 3 projects. Upgrade to Pro for unlimited projects and access to all the AI editing tools."
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        restrictedTool="projects"
+        reason="Free plan is limited to 3 projects. Upgrade to Pro for unlimited projects and access to all the AI editing tools."
       />
-
     </>
   );
 };

@@ -6,4 +6,4 @@ const ProjectCard = ({project, onEdit}) => {
   )
 }
 
-export default ProjectCard
+export default ProjectCard;

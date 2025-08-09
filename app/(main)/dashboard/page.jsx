@@ -8,7 +8,7 @@ import { Plus, Sparkles } from "lucide-react";
 import { BarLoader } from "react-spinners";
 import NewProjectModal from "./_components/new-project-modal";
 import ProjectGrid from "./_components/project-grid";
-import ProjectCard from "./_components/project-card";
+
 
 const Dashboard = () => {
   const [showNewProjectModal, setShowNewProjectModal] = useState(false);
@@ -21,7 +21,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen pt-32 pb-16">
-      <div className="conatiner mx-auto px-6">
+      <div className="container mx-auto px-6">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-4xl font-bold text-white mb-2">
