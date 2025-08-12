@@ -43,7 +43,7 @@ export const create = mutation({
     });
 
     // Update user's project count
-    await ctx.db.path(user._id, {
+    await ctx.db.patch(user._id, {
       projectsUsed: user.projectsUsed + 1,
       lastActiveAt: Date.now(),
     });

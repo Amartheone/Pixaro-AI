@@ -111,6 +111,7 @@ const NewProjectModal = ({ isOpen, onClose }) => {
 
       toast.success("Project created successfully!!");
 
+      //Navigate to editor
       router.push(`/editor/${projectId}`);
     } catch (error) {
       console.error("Error creating project:", error);

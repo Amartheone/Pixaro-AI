@@ -1,10 +1,11 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import React, { use } from "react";
+import React from "react";
 
-const Editor = async () => {
-  const { projectId } = await useParams();
+const Editor = () => {
+  const params = useParams();
+  const projectId = params.projectId;
 
   return <div>Editor: {projectId}</div>;
 };
