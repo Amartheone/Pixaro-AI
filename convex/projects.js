@@ -82,7 +82,7 @@ export const deleteProjects = mutation({
     await ctx.db.delete(args.projectId);
 
     // user.id is not written but user._id is written bcz convex has unique _id field
-    await ctx.db.path(user._id, {
+    await ctx.db.patch(user._id, {
       projectsUsed: Math.max(0, user.projectsUsed - 1),
       lastActiveAt: Date.now(),
     });
