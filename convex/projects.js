@@ -90,3 +90,35 @@ export const deleteProjects = mutation({
     return { success: true };
   },
 });
+
+export const getProject = query({
+  args: { projectId: v.id("projects")},
+  handler: async(ctx, args) => {
+    const user = await ctx.runQuery(internal.users.getCurrentUser);
+
+    const project = await ctx.db.get(args.projectId);
+    if(!project){
+      throw new Error("Project not found")
+    }
+
+    if(!user || project.userId !== user._id){
+      throw new Error("Access denied");
+    }
+
+    return project;
+  },
+});
+
+
+export const updateProject = mutation({
+  args:{
+    projectId: v.id("projects"),
+    canvasState: v.optional(v.any()),
+    width: v.optional(v.number()),
+    height: v.optional(v.number()),
+    currentImageUrl: v.optional(v.string()),
+    thumbnailUrl: v.optional(v.string()),
+    activeTransformations: v.optional(v.string()),
+    backgroundRemoved: v.optional(v.boolean()),
+  }
+})

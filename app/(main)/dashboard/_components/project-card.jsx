@@ -18,7 +18,7 @@ import { toast } from "sonner";
 
 const ProjectCard = ({ project, onEdit }) => {
   const { mutate: deleteProject, isLoading } = useConvexMutation(
-    api.projects.deleteProject
+    api.projects.deleteProjects
   );
 
   const lastUpdated = formatDistanceToNow(new Date(project.updatedAt), {
