@@ -1,8 +1,10 @@
 "use client";
 
 import { CanvasContext } from "@/context/context";
+import { useConvexQuery } from "@/hooks/use-convex-query";
 import { Monitor } from "lucide-react";
 import { useParams } from "next/navigation";
+import { api } from "@/convex/_generated/api";
 import React, { useState } from "react";
 
 const Editor = () => {
@@ -13,6 +15,12 @@ const Editor = () => {
   const [processingMessage, setProcessingMessage] = useState(null);
 
   const [activeTool, setActiveTool] = useState("resize");
+
+  const {
+    data: project,
+    isLoading,
+    error
+  } = useConvexQuery(api.projects.getProject, {projectId});
 
   return (
     <CanvasContext.Provider
