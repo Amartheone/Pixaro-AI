@@ -7,6 +7,7 @@ import { useParams } from "next/navigation";
 import { api } from "@/convex/_generated/api";
 import React, { useState } from "react";
 import { RingLoader } from "react-spinners";
+import CanvasEditor from "./_components/canvas";
 
 const Editor = () => {
   const params = useParams();
@@ -77,7 +78,7 @@ const Editor = () => {
       </div>
 
       <div className="hidden lg:block min-h-screen bg-slate-900">
-        <div>
+        <div className="flex flex-col h-screen">
           {processingMessage && (
             <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center">
               <div className="rounded-lg p-6 flex flex-col items-center gap-4">
@@ -92,7 +93,10 @@ const Editor = () => {
         {/* Top Bar */}
         <div className="flex flex-1 overflow-hidden"> 
           {/* sidebar */}
-          <div className="flex bg-slate-800">{/* Canvas */}</div>
+
+          <div className="flex-1 bg-slate-800">
+            <CanvasEditor project={project}/>
+          </div>
         </div>
       </div>
         </div>
