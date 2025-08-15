@@ -13,7 +13,8 @@ const CanvasEditor = ({ project }) => {
   const canvasRef = useRef();
   const containerRef = useRef();
 
-  const { CanvasEditor, setCanvasEditor, activeTool, onToolChange } = useCanvas();
+  const { CanvasEditor, setCanvasEditor, activeTool, onToolChange } =
+    useCanvas();
 
   const { mutate: updateProject } = useConvexMutation(
     api.projects.updateProject
@@ -81,6 +82,7 @@ const CanvasEditor = ({ project }) => {
         canvas.getContext().scale(scaleFactor, scaleFactor);
       }
 
+      //to load image
       if (project.currentImageUrl || project.originalImageUrl) {
         try {
           // use current image if available(may have transformations), fallback to original
@@ -94,6 +96,7 @@ const CanvasEditor = ({ project }) => {
           const canvasAspectRatio = project.width / project.height;
 
           let scaleX, scaleY;
+
           if (imgAspectRatio > canvasAspectRatio) {
             // image is wider than canvas - scale based on width
             scaleX = project.width / fabricImage.width;
@@ -148,10 +151,74 @@ const CanvasEditor = ({ project }) => {
     return () => {
       if (CanvasEditor) {
         CanvasEditor.dispose(), //Fabric.js cleanup method
-          setCanvasEditor(null);
+        setCanvasEditor(null);
       }
     };
   }, [project]); //project dependency mai dia kyunki if the project changes then it will come into effect.
+
+  const saveCanvasState = async () => {
+    if (!CanvasEditor || !project) return;
+
+    try {
+      //export canvas to json format (includes all objects and properties)
+      const canvasJSON = CanvasEditor.toJSON();
+
+      //to save in convex database
+      await updateProject({
+        projectId: project._id,
+        canvasState: canvasJSON,
+      });
+    } catch (error) {
+      console.error("Error saving canvas state:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (!CanvasEditor) return;
+
+    let saveTimeout;
+    // Debounced save function - waits 2 seconds after last change
+    const handleCanvasChange = () => {
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(() => {
+        saveCanvasState();
+      }, 2000); //2sec delay
+    };
+
+    //Listen to canvas modification events
+    CanvasEditor.on("object:modified", handleCanvasChange); //object transformed or moved
+    CanvasEditor.on("object:added", handleCanvasChange); //new object added
+    CanvasEditor.on("object:removed", handleCanvasChange); //object deleted
+
+    return () => {
+      clearTimeout(saveTimeout);
+      CanvasEditor.off("object:modified", handleCanvasChange);
+      CanvasEditor.off("object:added", handleCanvasChange);
+      CanvasEditor.off("object:removed", handleCanvasChange);
+    };
+  }, [CanvasEditor]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (!CanvasEditor || !project) return;
+
+      // Recalculate optimal scale for new window size
+      const newScale = calculateViewportScale();
+
+      // Update canvas display dimensions
+      CanvasEditor.setDimensions(
+        {
+          width: project.width * newScale,
+          height: project.height * newScale,
+        },
+        { backstoreOnly: false }
+      );
+
+      CanvasEditor.setZoom(newScale);
+      CanvasEditor.calcOffset(); //to update mouse event coordinates
+      CanvasEditor.requestRenderAll(); //re-render with new dimensions
+    };
+  }, [CanvasEditor, project]);
 
   return (
     <div

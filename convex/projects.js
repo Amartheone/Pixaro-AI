@@ -120,7 +120,7 @@ export const updateProject = mutation({
     activeTransformations: v.optional(v.string()),
     backgroundRemoved: v.optional(v.boolean()),
   },
-  handler: async () => {
+  handler: async (ctx,args) => {
     const user = await ctx.runQuery(internal.users.getCurrentUser);
 
     const project = await ctx.db.get(args.projectId);
