@@ -7,13 +7,13 @@ import React, { useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Canvas, FabricImage } from "fabric";
 
-const CanvasEditor = ({ project }) => {
+const canvasEditor = ({ project }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   const canvasRef = useRef();
   const containerRef = useRef();
 
-  const { CanvasEditor, setCanvasEditor, activeTool, onToolChange } =
+  const { canvasEditor, setCanvasEditor, activeTool, onToolChange } =
     useCanvas();
 
   const { mutate: updateProject } = useConvexMutation(
@@ -36,7 +36,7 @@ const CanvasEditor = ({ project }) => {
   };
 
   useEffect(() => {
-    if (!canvasRef.current || !project || CanvasEditor) return;
+    if (!canvasRef.current || !project || canvasEditor) return;
 
     const initializeCanvas = async () => {
       setIsLoading(true);
@@ -149,19 +149,19 @@ const CanvasEditor = ({ project }) => {
     initializeCanvas();
 
     return () => {
-      if (CanvasEditor) {
-        CanvasEditor.dispose(), //Fabric.js cleanup method
+      if (canvasEditor) {
+        canvasEditor.dispose(), //Fabric.js cleanup method
         setCanvasEditor(null);
       }
     };
   }, [project]); //project dependency mai dia kyunki if the project changes then it will come into effect.
 
   const saveCanvasState = async () => {
-    if (!CanvasEditor || !project) return;
+    if (!canvasEditor || !project) return;
 
     try {
       //export canvas to json format (includes all objects and properties)
-      const canvasJSON = CanvasEditor.toJSON();
+      const canvasJSON = canvasEditor.toJSON();
 
       //to save in convex database
       await updateProject({
@@ -174,7 +174,7 @@ const CanvasEditor = ({ project }) => {
   };
 
   useEffect(() => {
-    if (!CanvasEditor) return;
+    if (!canvasEditor) return;
 
     let saveTimeout;
     // Debounced save function - waits 2 seconds after last change
@@ -186,27 +186,27 @@ const CanvasEditor = ({ project }) => {
     };
 
     //Listen to canvas modification events
-    CanvasEditor.on("object:modified", handleCanvasChange); //object transformed or moved
-    CanvasEditor.on("object:added", handleCanvasChange); //new object added
-    CanvasEditor.on("object:removed", handleCanvasChange); //object deleted
+    canvasEditor.on("object:modified", handleCanvasChange); //object transformed or moved
+    canvasEditor.on("object:added", handleCanvasChange); //new object added
+    canvasEditor.on("object:removed", handleCanvasChange); //object deleted
 
     return () => {
       clearTimeout(saveTimeout);
-      CanvasEditor.off("object:modified", handleCanvasChange);
-      CanvasEditor.off("object:added", handleCanvasChange);
-      CanvasEditor.off("object:removed", handleCanvasChange);
+      canvasEditor.off("object:modified", handleCanvasChange);
+      canvasEditor.off("object:added", handleCanvasChange);
+      canvasEditor.off("object:removed", handleCanvasChange);
     };
-  }, [CanvasEditor]);
+  }, [canvasEditor]);
 
   useEffect(() => {
     const handleResize = () => {
-      if (!CanvasEditor || !project) return;
+      if (!canvasEditor || !project) return;
 
       // Recalculate optimal scale for new window size
       const newScale = calculateViewportScale();
 
       // Update canvas display dimensions
-      CanvasEditor.setDimensions(
+      canvasEditor.setDimensions(
         {
           width: project.width * newScale,
           height: project.height * newScale,
@@ -214,11 +214,11 @@ const CanvasEditor = ({ project }) => {
         { backstoreOnly: false }
       );
 
-      CanvasEditor.setZoom(newScale);
-      CanvasEditor.calcOffset(); //to update mouse event coordinates
-      CanvasEditor.requestRenderAll(); //re-render with new dimensions
+      canvasEditor.setZoom(newScale);
+      canvasEditor.calcOffset(); //to update mouse event coordinates
+      canvasEditor.requestRenderAll(); //re-render with new dimensions
     };
-  }, [CanvasEditor, project]);
+  }, [canvasEditor, project]);
 
   return (
     <div
@@ -254,4 +254,4 @@ const CanvasEditor = ({ project }) => {
   );
 };
 
-export default CanvasEditor;
+export default canvasEditor;
