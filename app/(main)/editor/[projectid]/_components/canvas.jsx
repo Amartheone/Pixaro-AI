@@ -7,7 +7,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Canvas, FabricImage } from "fabric";
 
-const canvasEditor = ({ project }) => {
+function canvasEditor ({ project }){
   const [isLoading, setIsLoading] = useState(true);
 
   const canvasRef = useRef();

@@ -21,7 +21,7 @@ export function usePlanAccess() {
 
   //Helper function to check if user has access to a specific tool
   const hasAccess = (toolId) => {
-    return planAccess[toolId] === false;
+    return planAccess[toolId] === true;
   };
 
   const getRestrictedTools = () => {
