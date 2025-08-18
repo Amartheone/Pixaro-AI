@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import UpgradeModal from "@/components/upgrade-modal";
 import { useCanvas } from "@/context/context";
 import { usePlanAccess } from "@/hooks/use-plan-access";
 import {
@@ -13,6 +14,8 @@ import {
   LockIcon,
   Maximize2,
   Palette,
+  RotateCcw,
+  RotateCw,
   Sliders,
   Text,
 } from "lucide-react";
@@ -31,7 +34,7 @@ const TOOLS = [
     id: "crop",
     label: "Crop",
     icon: Crop,
-    proOnly: false
+    proOnly: false,
   },
   {
     id: "adjust",
@@ -43,7 +46,7 @@ const TOOLS = [
     id: "text",
     label: "Text",
     icon: Text,
-    proOnly:false,
+    proOnly: false,
   },
   {
     id: "background",
@@ -77,7 +80,15 @@ const EditorTopbar = ({ project }) => {
     router.push("/dashboard");
   };
 
-  const handleToolChange = (toolId) => {};
+  const handleToolChange = (toolId) => {
+    if(!hasAccess(toolId)){
+        setRestrictedTool(toolId)
+        setShowUpgradeModal(true);
+        return;
+    }
+
+    onToolChange(toolId);
+  };
 
   return (
     <>
@@ -115,19 +126,42 @@ const EditorTopbar = ({ project }) => {
                     isActive
                       ? "bg-blue-600 text-white hover:bg-blue-700"
                       : "text-white hover:text-gray-300 hover:bg-gray-100"
-                  } ${!hasToolAccess ? "opacity-70" : ""}`}
+                  } ${!hasToolAccess ? "opacity-60" : ""}`}
                 >
                   <Icon className="h-4 w-4" />
                   {tool.label}
                   {tool.proOnly && !hasToolAccess && (
-                    <Lock className="h-3 w-3 text-amber-400"/>
+                    <Lock className="h-3 w-3 text-amber-400" />
                   )}
                 </Button>
               );
             })}
           </div>
+
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="sm" className="text-white">
+              <RotateCcw className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="sm" className="text-white">
+              <RotateCw className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
+
+      <UpgradeModal
+      isOpen={showUpgradeModal}
+      onClose={()=>{
+        setShowUpgradeModal(false)
+        setRestrictedTool(null)
+      }}
+      restrictedTool={restrictedTool}
+      reason={
+        restrictedTool === "export"
+        ? "Free plan is limited to 20 exports per month. Upgrade to Pro for unlimited exports."
+        : undefined
+      }
+      />
     </>
   );
 };
