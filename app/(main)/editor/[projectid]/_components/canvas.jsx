@@ -220,6 +220,21 @@ function canvasEditor ({ project }){
     };
   }, [canvasEditor, project]);
 
+  useEffect(()=>{
+    if(!canvasEditor) return;
+    switch (activeTool) {
+      case "crop":
+        // Crop tool shows crosshair cursor for precision selection
+        canvasEditor.defaultCursor = "crosshair";
+        canvasEditor.hoverCursor = "crosshair";
+        break;
+    
+      default:
+        canvasEditor.defaultCursor = "default";
+        canvasEditor.hoverCursor = "move";
+    } 
+  },[canvasEditor, activeTool])
+
   return (
     <div
       ref={containerRef}
