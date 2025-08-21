@@ -3,6 +3,7 @@ import { Crop, Expand, Eye, Maximize2, Palette, Sliders, Text } from "lucide-rea
 import CropContent from "./tools/crop";
 import React from "react";
 import ResizeControls from "./tools/resize";
+import AdjustControls from "./tools/adjust";
 
 const TOOL_CONFIGS = {
     resize: {
@@ -80,6 +81,8 @@ function renderToolConfig(activeTool, project){
             return <CropContent/>;
         case "resize":
             return <ResizeControls project={project}/>
+        case "adjust":
+            return <AdjustControls project={project}/>
     
         default:
             return <div className="text-white">Select a tool to get started</div>
