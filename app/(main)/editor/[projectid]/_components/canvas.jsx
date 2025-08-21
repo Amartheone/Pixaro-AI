@@ -7,15 +7,16 @@ import React, { useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Canvas, FabricImage } from "fabric";
 
-function canvasEditor ({ project }){
-  const [isLoading, setIsLoading] = useState(true);
-
+function canvasEditor({ project }) {
+  
   const canvasRef = useRef();
   const containerRef = useRef();
-
+  
   const { canvasEditor, setCanvasEditor, activeTool, onToolChange } =
-    useCanvas();
-
+  useCanvas();
+  
+  const [isLoading, setIsLoading] = useState(true);
+  
   const { mutate: updateProject } = useConvexMutation(
     api.projects.updateProject
   );
@@ -151,7 +152,7 @@ function canvasEditor ({ project }){
     return () => {
       if (canvasEditor) {
         canvasEditor.dispose(), //Fabric.js cleanup method
-        setCanvasEditor(null);
+          setCanvasEditor(null);
       }
     };
   }, [project]); //project dependency mai dia kyunki if the project changes then it will come into effect.
@@ -218,22 +219,25 @@ function canvasEditor ({ project }){
       canvasEditor.calcOffset(); //to update mouse event coordinates
       canvasEditor.requestRenderAll(); //re-render with new dimensions
     };
+
+    window.addEventListener("resize", handleResize)
+    return()=> window.removeEventListener("resize", handleResize)
   }, [canvasEditor, project]);
 
-  useEffect(()=>{
-    if(!canvasEditor) return;
+  useEffect(() => {
+    if (!canvasEditor) return;
     switch (activeTool) {
       case "crop":
         // Crop tool shows crosshair cursor for precision selection
         canvasEditor.defaultCursor = "crosshair";
         canvasEditor.hoverCursor = "crosshair";
         break;
-    
+
       default:
         canvasEditor.defaultCursor = "default";
         canvasEditor.hoverCursor = "move";
-    } 
-  },[canvasEditor, activeTool])
+    }
+  }, [canvasEditor, activeTool]);
 
   return (
     <div
@@ -267,6 +271,6 @@ function canvasEditor ({ project }){
       </div>
     </div>
   );
-};
+}
 
 export default canvasEditor;
