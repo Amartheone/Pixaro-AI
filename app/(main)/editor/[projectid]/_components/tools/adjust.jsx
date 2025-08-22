@@ -140,7 +140,7 @@ const AdjustControls = () => {
     };
 
     setFilterValues(newValues);
-    setIsApplying(newValues);
+    applyFilters(newValues);
   };
 
   const resetFilters = () => {
@@ -151,7 +151,7 @@ const AdjustControls = () => {
   const extractFilterValues = (imageObject) => {
     if (!imageObject?.filters?.length) return DEFAULT_VALUES;
 
-    const extractValues = { ...DEFAULT_VALUES };
+    const extractedValues = { ...DEFAULT_VALUES };
 
     imageObject.filters.forEach((filter) => {
       const config = FILTER_CONFIG.find(
@@ -164,7 +164,7 @@ const AdjustControls = () => {
           extractedValues[config.key] = Math.round(
             filterValue * (180 / Math.PI)
           );
-        } else extractValues[config.key] = Math.round(filterValue * 100);
+        } else extractedValues[config.key] = Math.round(filterValue * 100);
       }
     });
 
