@@ -178,7 +178,7 @@ const AdjustControls = () => {
       const existingValues = extractFilterValues(imageObject);
       setFilterValues(existingValues);
     }
-  }, []);
+  }, [canvasEditor]);
 
   if (!canvasEditor) {
     return (
