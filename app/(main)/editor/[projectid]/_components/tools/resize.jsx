@@ -2,7 +2,7 @@
 
 import { useCanvas } from "@/context/context";
 import { useConvexMutation } from "@/hooks/use-convex-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { api } from "@/convex/_generated/api";
 import React from "react";
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,14 @@ const ResizeControls = ({ project }) => {
     data,
     isLoading,
   } = useConvexMutation(api.projects.updateProject);
+
+  useEffect(()=>{
+    if(!isLoading && data){
+      setTimeout(() => {
+        window.dispatchEvent(new Event("resize"));
+      }, 500);
+    }
+  }, [data, isLoading])
 
   const handleWidthChange = (value) => {
     const width = parseInt(value) || 0;
@@ -80,7 +88,7 @@ const ResizeControls = ({ project }) => {
   };
 
   const calculateViewportScale = () => {
-    const container = canvasEditor.getElement().parentNode();
+    const container = canvasEditor.getElement().parentNode;
     if (!container) return 1;
 
     const containerWidth = container.clientWidth - 40; // togive 40px padding
@@ -123,7 +131,7 @@ const ResizeControls = ({ project }) => {
       canvasEditor.requestRenderAll(); // Trigger redraw  
 
       await updateProject({
-        projectid: project._id,
+        projectId: project._id,
         width: newWidth,
         height: newHeight,
         canvasState: canvasEditor.toJSON(), // save current canvas state 
