@@ -37,8 +37,11 @@ const ResizeControls = ({ project }) => {
   useEffect(()=>{
     if(!isLoading && data){
       setTimeout(() => {
+        //To fix the initial sizing issues
         window.dispatchEvent(new Event("resize"));
       }, 500);
+
+      window.location.reload(); //Force reload to apply new canvas dimensions
     }
   }, [data, isLoading])
 
