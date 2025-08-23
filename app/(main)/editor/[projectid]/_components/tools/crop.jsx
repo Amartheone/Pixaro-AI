@@ -3,12 +3,14 @@
 import { Button } from "@/components/ui/button";
 import { useCanvas } from "@/context/context";
 import {
+  CheckCheck,
   Crop,
   Maximize,
   RectangleHorizontal,
   RectangleVertical,
   Smartphone,
   Square,
+  X,
 } from "lucide-react";
 import { Rect } from "fabric";
 import { useEffect, useState } from "react";
@@ -64,12 +66,13 @@ const CropContent = () => {
         exitCropMode();
       }
     };
-  });
+  }, []);
 
   const exitCropMode = () => {
     if (!isCropMode) return;
 
     removeAllCropRectangles();
+
     setCropRect(null);
 
     if (SelectedImage && originalProps) {
@@ -87,12 +90,12 @@ const CropContent = () => {
       canvasEditor.setActiveObject(SelectedImage);
     }
 
-    setIsCropMode(null);
+    setIsCropMode(false);
     setSelectedImage(null);
     setOriginalProps(null);
     setSelectedRatio(null);
 
-    if(canvasEditor){
+    if (canvasEditor) {
       canvasEditor.requestRenderAll();
     }
   };
@@ -189,6 +192,9 @@ const CropContent = () => {
     canvasEditor.requestRenderAll();
   };
 
+  const applyAspectRatio = () => {};
+  const applyCrop = () => {};
+
   if (!canvasEditor) {
     return (
       <div className="p-4">
@@ -223,27 +229,65 @@ const CropContent = () => {
         </Button>
       )}
 
-      {isCropMode &&(
+      {isCropMode && (
         <div>
           <h3 className="text-sm font-medium text-white mb-3">
             Crop aspect ratio
           </h3>
           <div className="grid grid-cols-3 gap-2">
-            {ASPECT_RATIOS.map((ratio)=>{
+            {ASPECT_RATIOS.map((ratio) => {
               const IconComponent = ratio.icon;
 
-              return(
+              return (
                 <button
-                key={ratio.label}
-                onClick={()=>applyAspectRatio(ratio.value)}
+                  key={ratio.label}
+                  onClick={() => applyAspectRatio(ratio.value)}
+                  className={`text-center p-3 border rounded-lg transition-colors
+                  cursor-pointer ${
+                    selectedRatio === ratio.value
+                      ? "border-cyan-400 bg-cyan-400/10" //Highlighted when selected
+                      : "border-white/20 hover:border-white/40 hover:bg-white/5"
+                  }
+                  `}
                 >
                   <IconComponent className="h-6 w-6 mx-auto mb-2 text-white" />
+                  <div className="text-xs text-white">{ratio.label}</div>
+                  {ratio.ratio && (
+                    <div className="text-xs text-white/70">{ratio.ratio}</div>
+                  )}
                 </button>
-              )
+              );
             })}
           </div>
         </div>
       )}
+
+      {isCropMode && (
+        <div className="space-y-3 pt-4 border-t border-white/10">
+          <Button onClick={applyCrop} className="w-full" variant="primary">
+            <CheckCheck className="h-4 w-4 mr-2" />
+            Apply Crop
+          </Button>
+
+          <Button
+            onClick={() => exitCropMode()}
+            variant="outline"
+            className="w-full"
+          >
+            <X className="h-4 w-4 mr-2" />
+            Cancel
+          </Button>
+        </div>
+      )}
+
+      <div className="bg-slate-700/30 rounded-lg p-3">
+        <p className="text-xs text-white/70">
+          <strong>How to crop:</strong>
+          <br/>
+          1. Click "Start Cropping"
+          
+        </p>
+      </div>
     </div>
   );
 };
