@@ -12,9 +12,10 @@ import {
   Square,
   X,
 } from "lucide-react";
-import { Rect } from "fabric";
+import { FabricImage, Rect } from "fabric";
 import { useEffect, useState } from "react";
 import React from "react";
+import { toast } from "sonner";
 
 const ASPECT_RATIOS = [
   { label: "Freeform", value: null, icon: Maximize },
@@ -40,9 +41,11 @@ const CropContent = () => {
 
   const getActiveImage = () => {
     if (!canvasEditor) return null;
-    const activeObject = canvasEditor.getActiveObject();
 
-    if (activeObject && activeObject.type === "image") return activeObject;
+    const activeObject = canvasEditor.getActiveObject();
+    if (activeObject && activeObject.type === "image") {
+      return activeObject;
+    }
 
     const objects = canvasEditor.getObjects();
     return objects.find((obj) => obj.type == "image") || null;
@@ -192,8 +195,76 @@ const CropContent = () => {
     canvasEditor.requestRenderAll();
   };
 
-  const applyAspectRatio = () => {};
-  const applyCrop = () => {};
+  const applyAspectRatio = (ratio) => {
+    setSelectedRatio(ratio);
+
+    if (!cropRect || ratio === null) return;
+
+    const currentWidth = cropRect.width * cropRect.scaleX;
+    const newHeight = currentWidth / ratio;
+
+    cropRect.set({
+      height: newHeight / cropRect.scaleY,
+      scaleY: cropRect.scaleX, //Keep scalling uniform
+    });
+
+    canvasEditor.requestRenderAll();
+  };
+
+  const applyCrop = () => {
+    if (!SelectedImage || !cropRect) return;
+
+    try {
+      const cropBounds = cropRect.getBoundingRect();
+      const imageBounds = SelectedImage.getBoundingRect();
+
+      const cropX = Math.max(0, cropBounds.left - imageBounds.left);
+      const cropY = Math.max(0, cropBounds.top - imageBounds.top);
+      const cropWidth = Math.min(cropBounds.width, imageBounds.width - cropX);
+      const cropHeight = Math.min(
+        cropBounds.height,
+        imageBounds.height - cropY
+      );
+
+      const imageScaleX = SelectedImage.scaleX || 1;
+      const imageScaleY = SelectedImage.scaleY || 1;
+
+      const actualCropX = cropX / imageScaleX;
+      const actualCropY = cropY / imageScaleY;
+      const actualCropWidth = cropWidth / imageScaleX;
+      const actualCropHeight = cropHeight / imageScaleY;
+
+      const croppedImage = new FabricImage(SelectedImage._element, {
+        left: cropBounds.left + cropBounds.width / 2,
+        top: cropBounds.top + cropBounds.height / 2,
+
+        originX: "center",
+        originY: "center",
+        selectable: true,
+        evented: true,
+
+        // APPLY CROP using Fabric.js crop properties
+        cropX: actualCropX,
+        cropY: actualCropY,
+        width: actualCropWidth,
+        height: actualCropHeight,
+        scaleX: imageScaleX,
+        scaleY: imageScaleY,
+      });
+
+      canvasEditor.remove(SelectedImage);
+      canvasEditor.add(SelectedImage);
+
+      canvasEditor.setActiveObject(croppedImage);
+      canvasEditor.requestRenderAll();
+
+      exitCropMode();
+    } catch (error) {
+      console.error("Error applying crop:", error);
+      toast.error("Failed to apply crop. Please try again");
+      exitCropMode();
+    }
+  };
 
   if (!canvasEditor) {
     return (
@@ -283,9 +354,14 @@ const CropContent = () => {
       <div className="bg-slate-700/30 rounded-lg p-3">
         <p className="text-xs text-white/70">
           <strong>How to crop:</strong>
-          <br/>
+          <br />
           1. Click "Start Cropping"
-          
+          <br />
+          2. Drag the blue rectangle to select the area
+          <br />
+          3. Choose aspect ratio (optional)
+          <br />
+          4. Click "Apply Crop" to finalize
         </p>
       </div>
     </div>
