@@ -7,6 +7,7 @@ import { Tabs, TabsTrigger, TabsContent, TabsList } from "@/components/ui/tabs";
 import { HexColorPicker } from "react-colorful";
 import React from "react";
 import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 const UNSPLASH_ACCESS_KEY = process.env.NEXT_PUBLIC_UNSPLASH_ACCESS_KEY;
 const UNSPLASH_API_URL = "https://api.unsplash.com";
@@ -86,11 +87,21 @@ const BackgroundControls = ({ project }) => {
         `${UNSPLASH_API_URL}/search/photos?query=${encodeURIComponent(searchQuery)}&per_page=12`,
         {
           headers: {
-            Authorization: `client-ID ${UNSPLASH_ACCESS_KEY}`, //Unsplash requires this format
+            Authorization: `Client-ID ${UNSPLASH_ACCESS_KEY}`, //Unsplash requires this format
           },
         }
       );
-    } catch (error) {}
+
+      if (!response.ok) toast.error("Failed to search images");
+
+      const data = await response.json();
+      setUnsplashImages(data.results || []); //Store search results
+    } catch (error) {
+      console.error("Error searching Unsplash:", error);
+      toast.error("Failed to search images. Please try again");
+    } finally {
+      setIsSearching(false); //Hide loading state
+    }
   };
 
   const handleSearchKeyPress = (e) => {
@@ -98,6 +109,8 @@ const BackgroundControls = ({ project }) => {
       searchUnsplashImage();
     }
   };
+
+  const handleImageBackground = () => {};
 
   return (
     <div className="space-y-6 relative h-full">
@@ -217,6 +230,40 @@ const BackgroundControls = ({ project }) => {
               )}
             </Button>
           </div>
+
+          {unsplashImages?.length > 0 && (
+            <div className="space-y-3">
+              <h4 className="text-sm font-medium text-white">
+                Search Results ({unsplashImages?.length})
+              </h4>
+
+              <div className="grid grid-cols-2 gap-3 max-h-96 overflow-y-auto">
+                {unsplashImages.map((image) => {
+                  return (
+                    <div
+                      key={image.id}
+                      className="relative group cursor-pointer rounded-lg overflow-hidden border border-white/10 hover:border-cyan-400 transition-colors"
+                      onClick={() => {
+                        handleImageBackground(image.urls.regular, image.id);
+                      }}
+                    >
+                      <img
+                        src={image.urls.small}
+                        alt={image.alt_description || "Background image"}
+                        className="w-full h-24 object-cover "
+                      />
+
+                      {selectedImageId === image.id && (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                          <Loader2 className="h-5 w-5 animate-spin text-white" />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>
