@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useCanvas } from "@/context/context";
 import { FabricImage } from "fabric";
-import { ImageIcon, Palette, Trash2 } from "lucide-react";
+import { ImageIcon, Loader2, Palette, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Tabs, TabsTrigger, TabsContent, TabsList } from "@/components/ui/tabs";
 import { HexColorPicker } from "react-colorful";
@@ -70,12 +70,34 @@ const BackgroundControls = ({ project }) => {
     }
   };
 
-  const handleColorBackground = ()=>{
-    if(!canvasEditor) return;
+  const handleColorBackground = () => {
+    if (!canvasEditor) return;
 
     canvasEditor.backgroundColor = backgroundColor;
     canvasEditor.requestRenderAll(); //Re-render to show the change
-  }
+  };
+
+  const searchUnsplashImage = async () => {
+    if (!searchQuery.trim() || !UNSPLASH_ACCESS_KEY) return;
+
+    setIsSearching(true); //show loading state
+    try {
+      const response = await fetch(
+        `${UNSPLASH_API_URL}/search/photos?query=${encodeURIComponent(searchQuery)}&per_page=12`,
+        {
+          headers: {
+            Authorization: `client-ID ${UNSPLASH_ACCESS_KEY}`, //Unsplash requires this format
+          },
+        }
+      );
+    } catch (error) {}
+  };
+
+  const handleSearchKeyPress = (e) => {
+    if (e.key === "Enter") {
+      searchUnsplashImage();
+    }
+  };
 
   return (
     <div className="space-y-6 relative h-full">
@@ -166,7 +188,35 @@ const BackgroundControls = ({ project }) => {
           </div>
         </TabsContent>
         <TabsContent value="image" className="space-y-4 mt-6">
-          Change your password here.
+          <div>
+            <h3 className="text-sm font-medium text-white mb-2">
+              Image Background
+            </h3>
+            <p className="text-xs text-white/70 mb-4">
+              Search and use hight-quality images from Unsplash
+            </p>
+          </div>
+
+          <div className="flex gap-2">
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyPress={handleSearchKeyPress}
+              placeholder="Search for backgrounds..."
+              className="flex-1 bg-slate-700 border-white/20 text-white"
+            />
+            <Button
+              onClick={searchUnsplashImage}
+              disabled={isSearching || !searchQuery.trim()} //Disable if searching or empty query
+              variant="primary"
+            >
+              {isSearching ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Search className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
