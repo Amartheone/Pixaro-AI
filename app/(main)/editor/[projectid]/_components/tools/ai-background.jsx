@@ -82,6 +82,7 @@ const BackgroundControls = ({ project }) => {
   const handleColorBackground = () => {
     if (!canvasEditor) return;
 
+    canvasEditor.backgroundImage = null;
     canvasEditor.backgroundColor = backgroundColor;
     canvasEditor.requestRenderAll(); //Re-render to show the change
   };
@@ -165,11 +166,16 @@ const BackgroundControls = ({ project }) => {
   };
 
   const handleRemoveBackground = async(imageUrl, imageId) => {
-    
+    if(!canvasEditor) return;
+
+    canvasEditor.backgroundColor = null; //Remove color background
+    canvasEditor.backgroundImage = null; //Remove image background
+    canvasEditor.requestRenderAll(); //re-render
+
   }
 
   return (
-    <div className="space-y-6 relative h-full">
+    <div className="space-y-6 relative">
       <div>
         <div>
           <h3 className="text-sm font-medium text-white mb-2">
@@ -355,7 +361,7 @@ const BackgroundControls = ({ project }) => {
         </TabsContent>
       </Tabs>
 
-      <div className="pt-4 border-t border-white/10 absolute bottom-0 w-full">
+      <div className="pt-4 border-t border-white/10 bottom-0 w-full">
         <Button
         onClick={handleRemoveBackground}
         className="w-full"
