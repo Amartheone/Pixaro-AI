@@ -1,7 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { useCanvas } from "@/context/context";
 import { FabricImage } from "fabric";
-import { ImageIcon, Loader2, Palette, Search, Trash2 } from "lucide-react";
+import {
+  Download,
+  Image,
+  ImageIcon,
+  Loader2,
+  Palette,
+  Search,
+  Trash2,
+} from "lucide-react";
 import { useState } from "react";
 import { Tabs, TabsTrigger, TabsContent, TabsList } from "@/components/ui/tabs";
 import { HexColorPicker } from "react-colorful";
@@ -17,7 +25,7 @@ const BackgroundControls = ({ project }) => {
 
   const [backgroundColor, setBackgroundColor] = useState("#ffffff"); //default bg color
   const [searchQuery, setSearchQuery] = useState(""); //User's   search input
-  const [unsplashImages, setUnsplashImages] = useState(null); //Search results from Unsplash
+  const [unsplashImages, setUnsplashImages] = useState([]); //Search results from Unsplash
   const [isSearching, setIsSearching] = useState(false); //Loading state for search
   const [selectedImageId, setSelectedImageId] = useState(null); //Track which image is being proccessed
 
@@ -110,7 +118,55 @@ const BackgroundControls = ({ project }) => {
     }
   };
 
-  const handleImageBackground = () => {};
+  const handleImageBackground = async (imageUrl, imageId) => {
+    if (!canvasEditor) return;
+
+    setSelectedImageId(imageId); //Show loading for this specific image
+
+    try {
+      if (UNSPLASH_ACCESS_KEY) {
+        fetch(`${UNSPLASH_API_URL}/photos/${imageId}/download`, {
+          headers: {
+            Authorization: `Client-ID ${UNSPLASH_ACCESS_KEY}`,
+          },
+        }).catch(() => {}); //Silent fall - analytics tracking shouldn't break functionality
+      }
+
+      const fabricImage = await FabricImage.fromURL(imageUrl, {
+        crossOrigin: "anonymous", //Required for CORS
+      });
+
+      const canvasWidth = project.width; //Logical canvas width
+      const canvasHeight = project.height; //Logical canvas height
+
+      const scaleX = canvasWidth / fabricImage.width;
+      const scaleY = canvasHeight / fabricImage.height;
+
+      const scale = Math.max(scaleX, scaleY);
+
+      fabricImage.set({
+        scaleX: scale,
+        scaleY: scale,
+        originX: "center", //Center image horizontally
+        originY: "center", //center image vertically
+        left: canvasWidth / 2, //Position of canvas center x
+        top: canvasHeight / 2, //Position of canvas center y
+      });
+
+      canvasEditor.backgroundImage = fabricImage;
+      canvasEditor.requestRenderAll();
+
+      setSelectedImageId(null);//clear loading state
+    } catch (error) {
+      console.error("Error setting background image:", error);
+      toast.error("Failed to set background image. Please try again.")
+      setSelectedImageId(null); //clear loading state
+    }
+  };
+
+  const handleRemoveBackground = async(imageUrl, imageId) => {
+    
+  }
 
   return (
     <div className="space-y-6 relative h-full">
@@ -206,7 +262,7 @@ const BackgroundControls = ({ project }) => {
               Image Background
             </h3>
             <p className="text-xs text-white/70 mb-4">
-              Search and use hight-quality images from Unsplash
+              Search and use high-quality images from Unsplash
             </p>
           </div>
 
@@ -258,14 +314,57 @@ const BackgroundControls = ({ project }) => {
                           <Loader2 className="h-5 w-5 animate-spin text-white" />
                         </div>
                       )}
+
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                        <Download className="h-5 w-5 text-white" />
+                      </div>
+
+                      <div className="absolute bottom-0 left-0 right-0 bg-black/70 p-1">
+                        <p className="text-xs text-white/80 truncate">
+                          bg {image.user.name}
+                        </p>
+                      </div>
                     </div>
                   );
                 })}
               </div>
             </div>
           )}
+
+          {!isSearching && unsplashImages?.length === 0 && searchQuery && (
+            <div className="text-center py-8">
+              <ImageIcon className="h-12 w-12 text-white/30 mx-auto mb-3" />
+              <p className="text-white/70 text-sm">
+                No images found for "{searchQuery}"
+              </p>
+              <p className="text-white/70 text-xs">
+                Try a different search term
+              </p>
+            </div>
+          )}
+
+          {!searchQuery && unsplashImages?.length === 0 && (
+            <div className="text-center py-8">
+              <Search className="h-12 w-12 text-white/30 mx-auto mb-3" />
+              <p className="text-white/70 text-sm">
+                Search for background images
+              </p>
+              <p className="text-white/50 text-xs">Powered Unsplash</p>
+            </div>
+          )}
         </TabsContent>
       </Tabs>
+
+      <div className="pt-4 border-t border-white/10 absolute bottom-0 w-full">
+        <Button
+        onClick={handleRemoveBackground}
+        className="w-full"
+        variant="outline"
+        >
+          <Trash2 className="h-4 w-4 mr-2" />
+          Clear Canvas Background
+        </Button>
+      </div>
     </div>
   );
 };
