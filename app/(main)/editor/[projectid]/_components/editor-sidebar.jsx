@@ -13,6 +13,7 @@ import React from "react";
 import ResizeControls from "./tools/resize";
 import AdjustControls from "./tools/adjust";
 import BackgroundControls from "./tools/ai-background";
+import TextControls from "./tools/text";
 
 const TOOL_CONFIGS = {
   resize: {
@@ -69,13 +70,15 @@ const EditorSidebar = ({ project }) => {
         <div className="flex items-center gap-3">
           <Icon className="h-5 w-5 text-white" />
           <h2 className="text-lg font-semibold text-white">
-            {toolConfig.title} 
+            {toolConfig.title}
           </h2>
         </div>
         <p className="text-sm text-white mt-1">{toolConfig.description}</p>
       </div>
 
-      <div className="flex-1 p-4 overflow-y-scroll">{renderToolConfig(activeTool, project)}</div>
+      <div className="flex-1 p-4 overflow-y-scroll">
+        {renderToolConfig(activeTool, project)}
+      </div>
     </div>
   );
 };
@@ -90,6 +93,8 @@ function renderToolConfig(activeTool, project) {
       return <AdjustControls project={project} />;
     case "background":
       return <BackgroundControls project={project} />;
+    case "text":
+      return <TextControls project={project} />;
 
     default:
       return <div className="text-white">Select a tool to get started</div>;
