@@ -38,7 +38,6 @@ const TextControls = () => {
 
     if (activeObject && activeObject.type === "i-text") {
       setSelectedText(activeObject);
-
       // Sync UI controls with the selected text's current properties
       setFontFamily(activeObject.fontFamily || "Arial");
       setFontSize(activeObject.fontSize || FONT_SIZES.default);
@@ -51,24 +50,23 @@ const TextControls = () => {
   };
 
   useEffect(() => {
-      if (!canvasEditor) return;
+    if (!canvasEditor) return;
 
-      updateSelectedText();
+    updateSelectedText();
 
-      const handleSelectionCreated = () => updateSelectedText(); //when user selects and object
-      const handleSelectionUpdated = () => updateSelectedText(); //when selection changes to different object
+    const handleSelectionCreated = () => updateSelectedText(); //when user selects and object
+    const handleSelectionUpdated = () => updateSelectedText(); //when selection changes to different object
+    const handleSelectionCleared = () => setSelectedText(null); //when user deselects everything
 
-      const handleSelectionCleared = () => setSelectedText(null); //when user deselects everything
+    canvasEditor.on("selection:created", handleSelectionCreated);
+    canvasEditor.on("selection:updated", handleSelectionUpdated);
+    canvasEditor.on("selection:cleared", handleSelectionCleared);
 
-      canvasEditor.on("selection:created", handleSelectionCreated);
-      canvasEditor.on("selection:updated", handleSelectionUpdated);
-      canvasEditor.on("selection:cleared", handleSelectionCleared);
-
-      return () => {
-        canvasEditor.off("selection:created", handleSelectionCreated);
-        canvasEditor.off("selection:updated", handleSelectionUpdated);
-        canvasEditor.off("selection:cleared", handleSelectionCleared);
-      };
+    return () => {
+      canvasEditor.off("selection:created", handleSelectionCreated);
+      canvasEditor.off("selection:updated", handleSelectionUpdated);
+      canvasEditor.off("selection:cleared", handleSelectionCleared);
+    };
   }, [canvasEditor]);
 
   if (!canvasEditor) {
@@ -105,7 +103,12 @@ const TextControls = () => {
     }, 100);
   };
 
-  const applyFontFamily = (family) => {};
+  const applyFontFamily = (family) => {
+    if(!selectedText) return;
+    setFontFamily(family); //Update local state
+    selectedText.set("fontFamily", family); //Update Fabric.js object property
+    canvasEditor.requestRenderAll(); //Re-render to show all changes
+  };
 
   return (
     <div className="space-y-6">
