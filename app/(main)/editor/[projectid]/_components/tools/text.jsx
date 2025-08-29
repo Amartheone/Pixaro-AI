@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useCanvas } from "@/context/context";
 import { IText } from "fabric";
 import { Type } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import React from "react";
 
 const FONT_FAMILIES = [
@@ -31,10 +31,44 @@ const TextControls = () => {
   const [textAlign, setTextAlign] = useState("left"); //Current text alignment
   const [_, setChanged] = useState(0); //Force re-render trigger for button states
 
+  const updateSelectedText = () => {
+    if (!canvasEditor) return;
+
+    const activeObject = canvasEditor.getActiveObject();
+
+    if (activeObject && activeObject.type === "i-text") {
+      setSelectedText(activeObject);
+
+      // Sync UI controls with the selected text's current properties
+      setFontFamily(activeObject.fontFamily || "Arial");
+      setFontSize(activeObject.fontSize || FONT_SIZES.default);
+      setTextColor(activeObject.fill || "#000000");
+      setTextAlign(activeObject.textAlign || "left");
+    } else {
+      // If no text selected, clear the selectedText state
+      setSelectedText(null);
+    }
+  };
+
   useEffect(() => {
-    return () => {
       if (!canvasEditor) return;
-    };
+
+      updateSelectedText();
+
+      const handleSelectionCreated = () => updateSelectedText(); //when user selects and object
+      const handleSelectionUpdated = () => updateSelectedText(); //when selection changes to different object
+
+      const handleSelectionCleared = () => setSelectedText(null); //when user deselects everything
+
+      canvasEditor.on("selection:created", handleSelectionCreated);
+      canvasEditor.on("selection:updated", handleSelectionUpdated);
+      canvasEditor.on("selection:cleared", handleSelectionCleared);
+
+      return () => {
+        canvasEditor.off("selection:created", handleSelectionCreated);
+        canvasEditor.off("selection:updated", handleSelectionUpdated);
+        canvasEditor.off("selection:cleared", handleSelectionCleared);
+      };
   }, [canvasEditor]);
 
   if (!canvasEditor) {
@@ -71,6 +105,8 @@ const TextControls = () => {
     }, 100);
   };
 
+  const applyFontFamily = (family) => {};
+
   return (
     <div className="space-y-6">
       <div className="space-y-4">
@@ -94,6 +130,18 @@ const TextControls = () => {
 
           <div className="space-y-2 mb-4">
             <label className="text-xs text-white/70">Font Family</label>
+
+            <select
+              value={fontFamily}
+              onChange={(e) => applyFontFamily(e.target.value)}
+              className="w-full px-3 py-2 bg-slate-700 border border-white/20 rounded text-white text-sm"
+            >
+              {FONT_FAMILIES.map((font) => (
+                <option key={font} value={font}>
+                  {font}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       )}
