@@ -104,7 +104,7 @@ const TextControls = () => {
   };
 
   const applyFontFamily = (family) => {
-    if(!selectedText) return;
+    if (!selectedText) return;
     setFontFamily(family); //Update local state
     selectedText.set("fontFamily", family); //Update Fabric.js object property
     canvasEditor.requestRenderAll(); //Re-render to show all changes
