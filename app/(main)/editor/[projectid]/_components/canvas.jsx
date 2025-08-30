@@ -239,6 +239,13 @@ function canvasEditor({ project }) {
     }
   }, [canvasEditor, activeTool]);
 
+  useEffect(()=>{
+    if(!canvasEditor || !onToolChange) return;
+    
+
+
+  }, [])
+
   return (
     <div
       ref={containerRef}
