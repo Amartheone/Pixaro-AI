@@ -14,6 +14,7 @@ import ResizeControls from "./tools/resize";
 import AdjustControls from "./tools/adjust";
 import BackgroundControls from "./tools/ai-background";
 import TextControls from "./tools/text";
+import AIExtenderControls from "./tools/ai-extend";
 
 const TOOL_CONFIGS = {
   resize: {
@@ -95,6 +96,8 @@ function renderToolConfig(activeTool, project) {
       return <BackgroundControls project={project} />;
     case "text":
       return <TextControls project={project} />;
+    case "ai_extender":
+      return <AIExtenderControls project={project} />;
 
     default:
       return <div className="text-white">Select a tool to get started</div>;
