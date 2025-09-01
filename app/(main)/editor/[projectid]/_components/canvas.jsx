@@ -8,15 +8,14 @@ import { Loader2 } from "lucide-react";
 import { Canvas, FabricImage } from "fabric";
 
 function canvasEditor({ project }) {
-  
   const canvasRef = useRef();
   const containerRef = useRef();
-  
+
   const { canvasEditor, setCanvasEditor, activeTool, onToolChange } =
-  useCanvas();
-  
+    useCanvas();
+
   const [isLoading, setIsLoading] = useState(true);
-  
+
   const { mutate: updateProject } = useConvexMutation(
     api.projects.updateProject
   );
@@ -220,8 +219,8 @@ function canvasEditor({ project }) {
       canvasEditor.requestRenderAll(); //re-render with new dimensions
     };
 
-    window.addEventListener("resize", handleResize)
-    return()=> window.removeEventListener("resize", handleResize)
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, [canvasEditor, project]);
 
   useEffect(() => {
@@ -239,12 +238,26 @@ function canvasEditor({ project }) {
     }
   }, [canvasEditor, activeTool]);
 
-  useEffect(()=>{
-    if(!canvasEditor || !onToolChange) return;
-    
+  useEffect(() => {
+    if (!canvasEditor || !onToolChange) return;
 
+    const handleSelection = (e) => {
+      const selectedObject = e.selected?.[0]; //get first selected object
 
-  }, [])
+      // If selected object is text, then automatically switch to text tool
+      if (selectedObject && selectedObject.type === "i-text") {
+        onToolChange("text");
+      }
+    };
+
+    canvasEditor.on("selection:created", handleSelection); //New selection
+    canvasEditor.on("selection:updated", handleSelection); //Selection changed
+
+    return () => {
+      canvasEditor.off("selection:created", handleSelection);
+      canvasEditor.off("selection:updated", handleSelection);
+    };
+  }, [canvasEditor, onToolChange]);
 
   return (
     <div
