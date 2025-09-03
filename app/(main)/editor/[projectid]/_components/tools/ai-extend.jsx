@@ -158,7 +158,7 @@ const AIExtenderControls = ({ project }) => {
   };
 
   const { width: newWidth, height: newHeight } = calculateDimensions();
-  const currentImage = getMainImage();
+  const currentImage = getMainImage()
 
   return (
     <div className="space-y-6">
