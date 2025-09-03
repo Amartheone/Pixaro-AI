@@ -25,7 +25,7 @@ const FOCUS_MAP = {
   bottom: "fo-top", //Original image stays on top when extending bottom
 };
 
-const AIExtenderControls = (project) => {
+const AIExtenderControls = ({ project }) => {
   const { canvasEditor, setProcessingMessage } = useCanvas();
 
   const [selectedDirection, setSelectedDirection] = useState(null);
@@ -45,9 +45,9 @@ const AIExtenderControls = (project) => {
   const hasBackgroundRemoval = () => {
     const imageSrc = getImageSrc(getMainImage());
     return (
-      imageSrc.includes("e-bgremove") || //Imagekit background removal
-      imageSrc.includes("e-removedotbg") || //Alternative background removal
-      imageSrc.includes("e-changebg") //Background change (also removes original)
+      imageSrc?.includes("e-bgremove") || //Imagekit background removal
+      imageSrc?.includes("e-removedotbg") || //Alternative background removal
+      imageSrc?.includes("e-changebg") //Background change (also removes original)
     );
   };
 
@@ -143,17 +143,17 @@ const AIExtenderControls = (project) => {
       await updateProject({
         projectId: project._id,
         currentImageUrl: extendedUrl, //Update the current image URL
-        canvasState: canvasEditor.toJSON(), //save the canvas state 
-      })
-      
-      toast.success("Image Extended Successfully")
+        canvasState: canvasEditor.toJSON(), //save the canvas state
+      });
+
+      toast.success("Image Extended Successfully");
       setSelectedDirection(null);
     } catch (error) {
       console.error("Error in applying the extension", error);
-      toast.error("Failed to extend the image. Please try again")
-    }finally{
+      toast.error("Failed to extend the image. Please try again");
+    } finally {
       //Always we should hide the processing msg
-      setProcessingMessage(null)
+      setProcessingMessage(null);
     }
   };
 
@@ -162,7 +162,7 @@ const AIExtenderControls = (project) => {
 
   return (
     <div className="space-y-6">
-      <div className="">
+      <div>
         <h3 className="text-sm font-medium text-white mb-3">
           Select Extension Direction
         </h3>
