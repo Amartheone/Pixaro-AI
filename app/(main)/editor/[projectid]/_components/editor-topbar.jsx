@@ -3,15 +3,18 @@
 import { Button } from "@/components/ui/button";
 import UpgradeModal from "@/components/upgrade-modal";
 import { useCanvas } from "@/context/context";
-import { useConvexMutation } from "@/hooks/use-convex-query";
+import { useConvexMutation, useConvexQuery } from "@/hooks/use-convex-query";
 import { usePlanAccess } from "@/hooks/use-plan-access";
 import { api } from "@/convex/_generated/api";
 import {
   ArrowLeft,
+  ChevronDown,
   Crop,
   DeleteIcon,
+  Download,
   Expand,
   Eye,
+  FileImage,
   Loader2,
   LoaderPinwheel,
   Lock,
@@ -25,11 +28,20 @@ import {
   Sliders,
   Text,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import React from "react";
 import { toast } from "sonner";
 import { FabricImage } from "fabric";
+import { format } from "date-fns";
 
 const TOOLS = [
   {
@@ -111,12 +123,14 @@ const EditorTopbar = ({ project }) => {
   const { activeTool, onToolChange, canvasEditor } = useCanvas();
   const { hasAccess, canExport, isFree } = usePlanAccess();
 
-  const [isExporting, setIsExporting] = useState(false)
-  const [exportFormat, setExportFormat] = useState(null)
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportFormat, setExportFormat] = useState(null);
 
   const { mutate: updateProject, isLoading: isSaving } = useConvexMutation(
     api.projects.updateProject
   );
+
+  const { data: user } = useConvexQuery(api.users.getCurrentUser);
 
   const handleBackToDashboard = () => {
     router.push("/dashboard");
@@ -200,6 +214,69 @@ const EditorTopbar = ({ project }) => {
     }
   };
 
+  const handleExport = async (exportConfig) => {
+    if (!canvasEditor || !project) {
+      toast.error("Canvas not ready for export");
+      return;
+    }
+
+    if (!canExport(user?.exportsThisMonth || 0)) {
+      setRestrictedTool("export");
+      setShowUpgradeModal(true);
+      return;
+    }
+
+    setIsExporting(true);
+    setExportFormat(exportConfig.format);
+
+    try {
+  
+
+    const currentZoom = canvasEditor.getZoom();
+    const currentViewportTransform = [...canvasEditor.viewportTransform];
+
+    canvasEditor.setZoom(1);
+    canvasEditor.setViewportTransform([1, 0, 0, 1, 0, 0]); //these no.s means a b c d
+    //a , d -> scaling
+    // b,c -> skewing
+    // e,f -> translation(pan)
+    canvasEditor.setDimensions({
+      width: project.width,
+      height: project.height,
+    })
+    canvasEditor.requestRenderAll();
+
+    const dataURL = canvasEditor.toDataURL({
+      format: exportConfig.format.toLowerCase(),
+      quality: exportConfig.quality,
+      multiplier: 1, //To get the exact size of the canvas
+    });
+
+    canvasEditor.setZoom(currentZoom);
+    canvasEditor.setViewportTransform(currentViewportTransform);
+    canvasEditor.setDimensions({
+      width: project.width * currentZoom,
+      height: project.height * currentZoom,
+    });
+    canvasEditor.requestRenderAll();
+
+    const link = document.createElement("a");
+    link.download = `${project.title}.${exportConfig.extension}`;
+    link.href = dataURL;
+    document.body.appendChild(link);
+    link.click()
+    document.body.removeChild(link);
+
+    toast.success(`Image exported as ${exportConfig.format}!`)
+    } catch (error) {
+      console.error("Error exporting image:", error);
+      toast.error("Failed to export the image. Please try again.")
+    }finally{
+      setIsExporting(false)
+      setExportFormat(null);
+    }
+  };
+
   return (
     <>
       <div className="border-b px-6 py-3">
@@ -257,6 +334,73 @@ const EditorTopbar = ({ project }) => {
                 </>
               )}
             </Button>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                {/* use as child above as it is not possible to buttons inside it */}
+                <Button
+                  size="sm"
+                  variant="glass"
+                  disabled={isExporting || !canvasEditor}
+                  className="gap-2"
+                >
+                  {isExporting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Exporting {exportFormat}....
+                    </>
+                  ) : (
+                    <>
+                      <Download className="h-4 w-4 " />
+                      Export
+                      <ChevronDown className="h-4 w-4" />
+                    </>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className="w-56 bg-slate-800 border-slate-700"
+              >
+                <DropdownMenuLabel className="px-3 py-2 text-white/70 text-sm">
+                  Export Resolution: {project.width} x {project.height}px
+                </DropdownMenuLabel>
+
+                <DropdownMenuSeparator className="bg-slate-700" />
+
+                {EXPORT_FORMATS.map((config, index) => (
+                  <DropdownMenuItem
+                    key={index}
+                    onClick={() => handleExport(config)}
+                    className="text-white hover:bg-slate-700 cursor-pointer flex items-center gap-2"
+                  >
+                    <FileImage className="h-4 w-4" />
+                    <div className="flex-1">
+                      <div className="font-medium">{config.label}</div>
+                      <div className="text-xs text-white/50">
+                        {config.format} • {Math.round(config.quality * 100)}%
+                        quality
+                      </div>
+                    </div>
+                  </DropdownMenuItem>
+                ))}
+
+                {isFree && (
+                  <>
+                    <DropdownMenuSeparator className="bg-slate-700" />
+                    <div>
+                      Free Plan: {user?.exportsThisMonth || 0}/20 exports this
+                      month
+                      {(user?.exportsThisMonth || 0) >= 20 && (
+                        <div className="text-amber-400 mt-1">
+                          Upgrade to Pro for unlimited exports
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
