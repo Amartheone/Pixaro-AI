@@ -21,6 +21,7 @@ import {
   RefreshCcw,
   RotateCcw,
   RotateCw,
+  SaveAll,
   Sliders,
   Text,
 } from "lucide-react";
@@ -110,6 +111,9 @@ const EditorTopbar = ({ project }) => {
   const { activeTool, onToolChange, canvasEditor } = useCanvas();
   const { hasAccess, canExport, isFree } = usePlanAccess();
 
+  const [isExporting, setIsExporting] = useState(false)
+  const [exportFormat, setExportFormat] = useState(null)
+
   const { mutate: updateProject, isLoading: isSaving } = useConvexMutation(
     api.projects.updateProject
   );
@@ -176,10 +180,23 @@ const EditorTopbar = ({ project }) => {
         backgroundRemoved: false,
       });
 
-      toast.success("Canvas reset to original imgage successfully")
+      toast.success("Canvas reset to original imgage successfully");
     } catch (error) {
-      console.error("Error resetting canvas:",error);
-      toast.error("Failed to reset the canvas. Please try again.")
+      console.error("Error resetting canvas:", error);
+      toast.error("Failed to reset the canvas. Please try again.");
+    }
+  };
+
+  const handleManualSave = async () => {
+    try {
+      await updateProject({
+        projectId: project._id,
+        canvasState: canvasEditor.toJSON(),
+      });
+      toast.success("Project saved successfully !");
+    } catch (error) {
+      console.error("Error saving project:", error);
+      toast.error("Failed to save the project. Please try again.");
     }
   };
 
@@ -214,8 +231,29 @@ const EditorTopbar = ({ project }) => {
                 </>
               ) : (
                 <>
-                  <RefreshCcw className="h-4 w-4"/>
+                  <RefreshCcw className="h-4 w-4" />
                   Reset
+                </>
+              )}
+            </Button>
+
+            {/* Manual Save Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleManualSave}
+              disabled={isSaving || !project.originalImageUrl}
+              className="gap-2"
+            >
+              {isSaving ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <SaveAll className="h-4 w-4" />
+                  Save
                 </>
               )}
             </Button>
