@@ -28,7 +28,7 @@
 
 The core of PixaroAI is its intuitive and powerful editor interface, designed for a fluid workflow from start to finish.
 
-![PixaroAI Editor Interface](/public/new-logo1.png)
+![PixaroAI Editor Interface](/public/Preview.png)
 
 ---
 
