@@ -1,10 +1,10 @@
 <div align="center">
-  <img src="https_storage.googleapis.com_makerflow-293504.appspot.com_media_images_logo.png_1725474665487" alt="PixaroAI Logo" width="120" />
+  <img src="/public/new-logo1.png" alt="PixaroAI Logo" width="120" />
   <h1>PixaroAI 🎨✨</h1>
   <p><strong>Create Without Limits. A modern, AI-powered image editor built for the web.</strong></p>
   <br/>
 
-| [**➡️ Live Demo**](YOUR_DEPLOYMENT_LINK_HERE) |
+| [**➡️ Live Demo**](https://pixaro-ai.vercel.app/) |
 | :---: |
 | *Experience the deployed application* |
 
@@ -28,7 +28,7 @@
 
 The core of PixaroAI is its intuitive and powerful editor interface, designed for a fluid workflow from start to finish.
 
-![PixaroAI Editor Interface](https_storage.googleapis.com_makerflow-293504.appspot.com_media_images_Screenshot_2025-09-04_at_11.00.29_PM.jpg_1725474665487)
+![PixaroAI Editor Interface](https://drive.google.com/file/d/1cNSnPkLZU8x39Vi_VA6GRBbjFJMn_BDl/view?usp=drive_link)
 
 ---
 
