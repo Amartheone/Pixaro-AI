@@ -76,7 +76,7 @@ const Features = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-2 grid-cols-1 gap-8">
             {features.map((feature, index)=>{
                 return <FeatureCard key={index} {...feature} delay={index*100} />
             })}
